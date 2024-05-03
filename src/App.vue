@@ -2,15 +2,10 @@
 import { ref, reactive, onMounted, computed } from "vue";
 import Alerta from "./components/Alerta.vue";
 import Spinner from "./components/Spinner.vue";
+import useCripto from "./comosables/useCripto";
 
-const monedas = ref([
-  { codigo: 'USD', texto: 'Dolar de Estados Unidos' },
-  { codigo: 'MXN', texto: 'Peso Mexicano' },
-  { codigo: 'EUR', texto: 'Euro' },
-  { codigo: 'GBP', texto: 'Libra Esterlina' }
-])
+const { monedas, criptomonedas } = useCripto();
 
-const criptomonedas = ref([]);
 const error = ref("");
 
 const cotizar = reactive({
@@ -20,14 +15,7 @@ const cotizar = reactive({
 const cotizacion = ref({});
 const cargando = ref(false);
 
-onMounted(() => {
-  const url = "https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD";
-  fetch(url)
-    .then(respuesta => respuesta.json())
-    .then(({ Data }) => {
-      criptomonedas.value = Data;
-    })
-})
+
 
 const cotizarCripto = () => {
   // Validar que cotizar esté lleno
