@@ -1,10 +1,11 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive } from "vue";
 import Alerta from "./components/Alerta.vue";
+import Cotizacion from "./components/Cotizacion.vue";
 import Spinner from "./components/Spinner.vue";
-import useCripto from "./comosables/useCripto";
+import useCripto from "./composables/useCripto";
 
-const { monedas, criptomonedas } = useCripto();
+const { monedas, criptomonedas, cargando, cotizacion, obtenerCotizacion, mostrarCotizacion } = useCripto();
 
 const error = ref("");
 
@@ -12,10 +13,6 @@ const cotizar = reactive({
   moneda: "",
   criptomoneda: ""
 })
-const cotizacion = ref({});
-const cargando = ref(false);
-
-
 
 const cotizarCripto = () => {
   // Validar que cotizar esté lleno
@@ -24,28 +21,8 @@ const cotizarCripto = () => {
     return;
   }
   error.value = "";
-  obtenerCotizacion();
+  obtenerCotizacion(cotizar);
 }
-
-const obtenerCotizacion = async () => {
-  cargando.value = true;
-  cotizacion.value = {};
-  const { moneda, criptomoneda } = cotizar;
-
-  const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
-  const respuesta = await fetch(url);
-  const resultado = await respuesta.json();
-
-  // Se utiliza esta versión de acceso a propiedades de objeto porque esas propiedades son dinámicas.
-  // Con la notación de punto no se pueden utilizar variables
-  cotizacion.value = resultado.DISPLAY[criptomoneda][moneda];
-  cargando.value = false;
-
-}
-
-const mostrarCotizacion = computed(() => {
-   return Object.values(cotizacion.value).length;
-})
 
 
 
@@ -81,20 +58,11 @@ const mostrarCotizacion = computed(() => {
         </div>
         <input type="submit" value="Cotizar">
       </form>
-      <Spinner v-if="cargando"/>
-      <div v-if="mostrarCotizacion" class="contenedor-resultado">
-        <h2>Cotización</h2>
-        <div class="resultado">
-          <img :src='"https://cryptocompare.com/" + cotizacion.IMAGEURL' alt="imagen cripto">
-          <div>
-            <p>El precio es de: <span>{{ cotizacion.PRICE }}</span></p>
-            <p>Precio más alto del día: <span>{{ cotizacion.HIGHDAY }}</span></p>
-            <p>Precio más bajo del día: <span>{{ cotizacion.LOWDAY }}</span></p>
-            <p>Variación últimas 24 h: <span>{{ cotizacion.CHANGEPCT24HOUR }}%</span></p>
-            <p>Última actualización: <span>{{ cotizacion.LASTUPDATE }}</span></p>
-          </div>
-        </div>
-      </div>
+      
+      <Spinner v-if="cargando" />
+
+      <Cotizacion v-if="mostrarCotizacion" :cotizacion="cotizacion" />
+
     </div>
 
   </div>
